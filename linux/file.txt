@@ -1,0 +1,16 @@
+
+Filesystem                Size      Used Available Use% Mounted on
+/dev/root                 5.0G      1.5G      3.5G  31% /
+devtmpfs                116.3M         0    116.3M   0% /dev
+#!/bin/sh
+
+pwd
+   0 vi /tmp/file.txt
+   1 df -h | head -3 >> /tmp/file.txt 
+   2 chmod g+wx /tmp/file.txt 
+   3 chmod o-rwx /tmp/file.txt 
+   4 vi myfirstbashscript.sh
+   5 chmod +x myfirstbashscript.sh 
+   6 export USER="hellwig"
+   7 cat myfirstbashscript.sh >> /tmp/file.txt 
+   8 history >> /tmp/file.txt 
