@@ -1,0 +1,23 @@
+""" 08 Проверка формата email
+
+Напишите программу, которая проверяет
+- начинается ли строка с буквы,
+- содержит ли в себе символ @,
+- и заканчивается ли на .com или .de.
+
+Пример вывода:
+email: user@example.com
+Корректный формат? True
+"""
+
+email = "user@example.com"
+print("email:", email)
+
+print("Корректный формат? ", email[0].isalpha() and "@" in email and email.endswith((".com", ".de")))
+
+
+email = "1user@example.com"
+print("email:", email)
+
+print("Корректный формат? ", email[0].isalpha() and "@" in email and email.endswith((".com", ".de")))
+
