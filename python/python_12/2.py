@@ -32,19 +32,3 @@ for data in data_list:
     age = int(age)
     balance = float(balance)
     print(f"Имя: {name:10s} Возраст: {age:3d} Баланс: {balance:10.2f}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
