@@ -17,13 +17,11 @@ numbers = [1, 3, 6, 9, 10, 12, 15, 19, 20]
 
 input_number = 3
 
-result = []
-
-for number in numbers:
-    if number % input_number == 0:
-        continue
-
-    result.append(number)
+i =  0
+while i < len(numbers):
+    if numbers[i] % input_number == 0:
+        numbers.pop(i)
+        i -= 1
+    i += 1
 
 print("Список без кратных значений:", numbers)
-
