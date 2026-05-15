@@ -33,7 +33,7 @@ def check_brackets(string):
         if char in LEFT_BRACKETS:
             stack.append(char)
 
-        else:
+        elif char in RIGHT_BRACKETS:
             if not stack:
                 return False
 
@@ -56,6 +56,7 @@ test_cases = [
     "([)]",
     "{[)(()]}",
     "({[)",
+    "(123{000[wefwfe]we}er234)",
 ]
 
 for test_case in test_cases:

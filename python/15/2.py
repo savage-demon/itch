@@ -27,7 +27,9 @@
 NAME, PRICE = 15, 13
 
 line = "-" * (NAME + PRICE * 2)
+
 row_template = f"{{:<{NAME}}}{{:>{PRICE}}}{{:>{PRICE}}}"
+
 header_template = f"{line}\n{{:<{NAME}}}{{:>{PRICE}}}{{:>{PRICE}}}\n{line}"
 
 products = [["Laptop", 1200], ["Mouse", 25], ["Keyboard", 75], ["Monitor", 200]]
