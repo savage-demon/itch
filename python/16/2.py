@@ -39,8 +39,6 @@ def check_brackets(string):
 
             i = RIGHT_BRACKETS.find(char)
 
-            if i < 0:
-                return False
             if stack.pop() != LEFT_BRACKETS[i]:
                 return False
 
