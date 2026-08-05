@@ -1,0 +1,116 @@
+
+Из базы данных ich работаем с коллекцией ich.Spotify_Youtube:
+
+
+Найдите трек с наивысшими показателями  Danceability и Energy. 
+
+У какого трека (но не compilation) самая большая длительность? 
+
+В каком одном альбоме самое большее количество треков? 
+
+Сколько просмотров видео на youtube у трека с самым высоким количеством прослушиваний на spotify (Stream)? 
+
+Экспортируйте 20 самых популярных (прослушивания или просмотры) треков по версиям youtube и spotify и импортируйте в базу ich_edit их с именами top20youtube и top20spotify, и добавьте им свои имена для уникальности. 
+
+
+РЕШЕНИЯ
+
+1. Трек с наивысшими показателями Danceability и Energy:
+
+db.getSiblingDB("ich").Spotify_Youtube.find(
+    {
+        Danceability: { $type: "number" },
+        Energy: { $type: "number" }
+    },
+    {
+        _id: 0,
+        Track: 1,
+        Artist: 1,
+        Danceability: 1,
+        Energy: 1
+    }
+).sort({ Danceability: -1, Energy: -1 }).limit(1)
+
+2. Самый длинный трек, не относящийся к compilation:
+
+db.getSiblingDB("ich").Spotify_Youtube.find(
+    {
+        Album_type: { $ne: "compilation" },
+        Duration_ms: { $type: "number" }
+    },
+    {
+        _id: 0,
+        Track: 1,
+        Artist: 1,
+        Album_type: 1,
+        Duration_ms: 1
+    }
+).sort({ Duration_ms: -1 }).limit(1)
+
+3. Альбом с самым большим количеством треков:
+
+db.getSiblingDB("ich").Spotify_Youtube.aggregate([
+    {
+        $match: {
+            Album: { $nin: [null, ""] }
+        }
+    },
+    {
+        $group: {
+            _id: {
+                album: "$Album",
+                artist: "$Artist"
+            },
+            track_count: { $sum: 1 }
+        }
+    },
+    {
+        $sort: { track_count: -1 }
+    },
+    {
+        $limit: 1
+    }
+])
+
+4. Просмотры на YouTube у трека с наибольшим количеством прослушиваний в Spotify:
+
+db.getSiblingDB("ich").Spotify_Youtube.find(
+    { Stream: { $type: "number" } },
+    {
+        _id: 0,
+        Track: 1,
+        Artist: 1,
+        Stream: 1,
+        Views: 1
+    }
+).sort({ Stream: -1 }).limit(1)
+
+5. Перенос top-20 в Atlas.
+Этот код запускается в mongosh при активном подключении к Atlas:
+
+const sourceDb = new Mongo(
+    "mongodb://ich1:password@mongo.itcareerhub.de/" +
+    "?readPreference=primary&ssl=false&authMechanism=DEFAULT&authSource=ich"
+).getDB("ich")
+
+const targetDb = db.getSiblingDB("ich_edit")
+
+const top20youtube = sourceDb.Spotify_Youtube.find({
+    Views: { $type: "number" }
+}).sort({
+    Views: -1,
+    _id: 1
+}).limit(20).toArray()
+
+const top20spotify = sourceDb.Spotify_Youtube.find({
+    Stream: { $type: "number" }
+}).sort({
+    Stream: -1,
+    _id: 1
+}).limit(20).toArray()
+
+targetDb.createCollection("top20youtube_deman")
+targetDb.top20youtube_deman.insertMany(top20youtube)
+
+targetDb.createCollection("top20spotify_deman")
+targetDb.top20spotify_deman.insertMany(top20spotify)

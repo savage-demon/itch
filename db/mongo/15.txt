@@ -1,0 +1,68 @@
+Коллекция imdb : Используя оператор $size , найдите фильмы, написанные 3 сценаристами (writers) и снятые 2 режиссерами (directors)
+
+Коллекция bookings: Найдите адрес нахождения автомобиля с vin WME4530421Y135045 по самой последней дате (и времени) final_date
+
+Коллекция bookings: подсчитайте, у скольких автомобилей при окончании аренды закончилось топливо (final_fuel)
+
+Коллекция bookings: найдите номерной знак и vin номер авто, с самым большим километражом (distance)
+
+Коллекция imdb. Найдите фильм с участием "Brad Pitt" с самым высоким рейтингом (imdb.rating)
+
+
+РЕШЕНИЯ
+
+1. Фильмы с тремя сценаристами и двумя режиссерами:
+
+db.getSiblingDB("ich").imdb.find(
+    {
+        writers: { $size: 3 },
+        directors: { $size: 2 }
+    },
+    {
+        _id: 0,
+        title: 1,
+        writers: 1,
+        directors: 1
+    }
+)
+
+2. Адрес автомобиля по самой поздней final_date:
+
+db.getSiblingDB("ich").bookings.find(
+    { vin: "WME4530421Y135045" },
+    {
+        _id: 0,
+        final_address: 1,
+        final_date: 1
+    }
+).sort({ final_date: -1 }).limit(1)
+
+3. Количество автомобилей, у которых к окончанию аренды закончилось топливо:
+
+db.getSiblingDB("ich").bookings.countDocuments({ final_fuel: 0 })
+
+4. Номерной знак и VIN автомобиля с самым большим километражом:
+
+db.getSiblingDB("ich").bookings.find(
+    { distance: { $type: "number" } },
+    {
+        _id: 0,
+        plate: 1,
+        vin: 1,
+        distance: 1
+    }
+).sort({ distance: -1 }).limit(1)
+
+5. Фильм с Brad Pitt с самым высоким рейтингом:
+
+db.getSiblingDB("ich").imdb.find(
+    {
+        cast: "Brad Pitt",
+        "imdb.rating": { $type: "number" }
+    },
+    {
+        _id: 0,
+        title: 1,
+        "imdb.rating": 1
+    }
+).sort({ "imdb.rating": -1 }).limit(1)

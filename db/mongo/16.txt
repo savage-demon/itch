@@ -1,0 +1,131 @@
+
+Найдите средний возраст из коллекции ich.US_Adult_Income
+
+Поменяв подключение к базе данных, создать коллекцию orders_NAME (для уникальности - добавим ваше имя в название) со свойствами id, customer, product, amount, city, используя следующие данные:
+
+1 Olga Apple 15.55 Berlin
+
+2 Anna Apple 10.05 Madrid
+
+3 Olga Kiwi 9.6 Berlin
+
+4 Anton Apple 20 Roma
+
+5 Olga Banana 8 Madrid
+
+6 Petr Orange 18.3 Paris
+
+
+
+
+
+Найти сколько всего было совершено покупок
+
+Найти сколько всего раз были куплены яблоки
+
+Вывести идентификаторы трех самые дорогих покупок
+
+Найти сколько всего покупок было совершено в Берлине
+
+Найти количество покупок яблок в городах Берлин и Мадрид
+
+Найти сколько было потрачено каждым покупателем
+
+(подсказка: используем $group и total: {$sum: '$amount'} )
+
+Найти в каких городах совершала покупки Ольга
+
+(подсказка: используем $match customer: 'Olga' и $group _id: '$city')
+
+
+РЕШЕНИЯ
+
+1. Средний возраст в ich.US_Adult_Income:
+
+db.getSiblingDB("ich").US_Adult_Income.aggregate([
+    {
+        $group: {
+            _id: null,
+            average_age: { $avg: "$age" }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            average_age: 1
+        }
+    }
+])
+
+2. Создание и заполнение коллекции в MongoDB Atlas:
+
+const atlasDb = db.getSiblingDB("test")
+
+atlasDb.createCollection("orders_deman")
+
+atlasDb.orders_deman.insertMany([
+    { id: 1, customer: "Olga",  product: "Apple",  amount: 15.55, city: "Berlin" },
+    { id: 2, customer: "Anna",  product: "Apple",  amount: 10.05, city: "Madrid" },
+    { id: 3, customer: "Olga",  product: "Kiwi",   amount: 9.6,   city: "Berlin" },
+    { id: 4, customer: "Anton", product: "Apple",  amount: 20,    city: "Roma" },
+    { id: 5, customer: "Olga",  product: "Banana", amount: 8,     city: "Madrid" },
+    { id: 6, customer: "Petr",  product: "Orange", amount: 18.3,  city: "Paris" }
+])
+
+3. Сколько всего было совершено покупок:
+
+db.getSiblingDB("test").orders_deman.countDocuments({})
+
+4. Сколько раз были куплены яблоки:
+
+db.getSiblingDB("test").orders_deman.countDocuments({ product: "Apple" })
+
+5. Идентификаторы трех самых дорогих покупок:
+
+db.getSiblingDB("test").orders_deman.find(
+    {},
+    {
+        _id: 0,
+        id: 1,
+        amount: 1
+    }
+).sort({ amount: -1 }).limit(3)
+
+6. Сколько покупок было совершено в Берлине:
+
+db.getSiblingDB("test").orders_deman.countDocuments({ city: "Berlin" })
+
+7. Количество покупок яблок в Берлине и Мадриде:
+
+db.getSiblingDB("test").orders_deman.countDocuments({
+    product: "Apple",
+    city: { $in: ["Berlin", "Madrid"] }
+})
+
+8. Сколько было потрачено каждым покупателем:
+
+db.getSiblingDB("test").orders_deman.aggregate([
+    {
+        $group: {
+            _id: "$customer",
+            total: { $sum: "$amount" }
+        }
+    },
+    {
+        $sort: { _id: 1 }
+    }
+])
+
+9. В каких городах совершала покупки Ольга:
+
+db.getSiblingDB("test").orders_deman.aggregate([
+    {
+        $match: { customer: "Olga" }
+    },
+    {
+        $group: { _id: "$city" }
+    },
+    {
+        $sort: { _id: 1 }
+    }
+])

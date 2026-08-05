@@ -1,4 +1,5 @@
 /python/.idea
 /.idea
+.env
 /python/cw_24_06/.env
 /python/cw_24_06/__pycache__

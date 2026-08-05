@@ -1,0 +1,126 @@
+
+MySQL:
+
+
+Работаем с базой данных sakila.
+
+Вывести названия фильмов с расшифровкой рейтинга для каждого. Рейтинги описаны здесь. В таблице film хранятся годы рейтингов. Нужно воспользоваться оператором case чтобы определить для каждого кода условие, по которому будет выводится его развернутое описание (1 предложение). 
+
+Выведите количество фильмов в каждой категории рейтинга. Используем group by. 
+
+Используя оконные функции и partition by, выведите список названий фильмов, рейтинг и количество фильмов в каждом рейтинге. Объясните, чем отличаются результаты предыдущего запроса и запроса в этой задаче. 
+
+Изучите таблицы payment и customer. Выведите список всех платежей с указанием имени и фамилии каждого заказчика, датой платежа и суммой.
+
+Поменяйте предыдущий запрос так, чтобы дата выводилась в формате “число, название месяца, год” (без времени).
+
+
+MongoDB:
+
+
+Работаем с коллекцией sample_data.restaurants, подключение:
+mongodb://ich1:password@3.67.41.21:27017/?readPreference=primary&ssl=false&authMechanism=DEFAULT&authSource=ich
+
+
+Найти рестораны на 'Staten Island' в названии которых есть слово pizza (Pizza и PIZZA тоже считаются)
+
+Выведите названия 5 лучших по среднему значению отзывов ( $avg: "$grades.score")
+
+
+РЕШЕНИЯ MYSQL
+
+USE sakila;
+
+1. Названия фильмов с расшифровкой рейтинга:
+
+SELECT
+    title,
+    rating,
+    CASE rating
+        WHEN 'G' THEN 'General Audiences: фильм разрешен зрителям всех возрастов.'
+        WHEN 'PG' THEN 'Parental Guidance Suggested: некоторые материалы могут не подходить детям.'
+        WHEN 'PG-13' THEN 'Parents Strongly Cautioned: некоторые материалы могут не подходить детям младше 13 лет.'
+        WHEN 'R' THEN 'Restricted: зрители младше 17 лет допускаются только с родителем или взрослым опекуном.'
+        WHEN 'NC-17' THEN 'Adults Only: зрители в возрасте 17 лет и младше не допускаются.'
+        ELSE 'Описание рейтинга отсутствует.'
+    END AS rating_description
+FROM film;
+
+2. Количество фильмов в каждой категории рейтинга:
+
+SELECT
+    rating,
+    COUNT(*) AS film_count
+FROM film
+GROUP BY rating
+ORDER BY rating;
+
+3. Названия фильмов, рейтинг и количество фильмов с таким рейтингом:
+
+SELECT
+    title,
+    rating,
+    COUNT(*) OVER (PARTITION BY rating) AS film_count
+FROM film
+ORDER BY rating, title;
+
+Предыдущий запрос с GROUP BY возвращает по одной строке для каждого рейтинга.
+Запрос с оконной функцией сохраняет строку каждого фильма и добавляет к ней
+общее количество фильмов с таким же рейтингом.
+
+4. Все платежи с именем и фамилией заказчика:
+
+SELECT
+    c.first_name,
+    c.last_name,
+    p.payment_date,
+    p.amount
+FROM payment AS p
+JOIN customer AS c
+    ON c.customer_id = p.customer_id
+ORDER BY p.payment_date;
+
+5. Платежи с датой в формате «число, название месяца, год»:
+
+SELECT
+    c.first_name,
+    c.last_name,
+    DATE_FORMAT(p.payment_date, '%e, %M, %Y') AS payment_date,
+    p.amount
+FROM payment AS p
+JOIN customer AS c
+    ON c.customer_id = p.customer_id
+ORDER BY p.payment_date;
+
+
+РЕШЕНИЯ MONGODB
+
+1. Рестораны на Staten Island, в названии которых есть слово pizza без учета регистра:
+
+db.getSiblingDB("sample_data").restaurants.find({
+    borough: "Staten Island",
+    name: { $regex: /\bpizza\b/i }
+})
+
+2. Пять ресторанов с наибольшим средним значением grades.score:
+
+db.getSiblingDB("sample_data").restaurants.aggregate([
+    {
+        $match: {
+            "grades.0": { $exists: true }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            name: 1,
+            average_score: { $avg: "$grades.score" }
+        }
+    },
+    {
+        $sort: { average_score: -1 }
+    },
+    {
+        $limit: 5
+    }
+])
